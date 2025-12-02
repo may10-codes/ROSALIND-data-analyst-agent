@@ -1,0 +1,30 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rosalind-data-analyst-agent"
+version = "0.1.0"
+description = "AI-powered autonomous data analyst agent"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Your Name", email = "you@example.com"}]
+
+dependencies = [
+    "langchain>=0.3.0",
+    "langchain-community",
+    "langchain-groq",
+    "langchain-openai",
+    "langchain-ollama",
+    "pandas",
+    "plotly",
+    "streamlit",
+    "faiss-cpu",
+    "python-dotenv",
+    "pydantic>=2.8.0"
+]
+
+[project.optional-dependencies]
+dev = ["black", "ruff", "pytest", "jupyter"]
