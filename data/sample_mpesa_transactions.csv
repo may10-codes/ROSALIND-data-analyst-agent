@@ -1,0 +1,11 @@
+transaction_time,phone_number,amount,transaction_type,merchant_name,location
+2024-01-03 08:15:22,+254712345678,2500,Pay Merchant,Safaricom Shop,Nairobi CBD
+2024-01-03 14:30:10,+254723456789,800,Send Money,,Kisumu
+2024-01-04 09:22:11,+254734567890,5000,Pay Merchant,Naivas Supermarket,Westlands
+2024-01-05 18:45:33,+254745678901,1200,Withdraw Cash,M-Pesa Agent,Rongai
+2024-01-06 11:11:11,+254756789012,3500,Pay Merchant,Carrefour,Gigiri
+2024-01-07 13:20:45,+254712345678,1500,Send Money,,Eldoret
+2024-01-08 16:55:20,+254723456789,3000,Pay Merchant,Quickmart,Ngong Road
+2024-01-09 10:10:10,+254734567890,900,Buy Airtime,,
+2024-01-10 12:12:12,+254745678901,4200,Pay Merchant,Tuskys Thika Road,Thika Road
+2024-01-11 19:30:55,+254756789012,1800,Withdraw Cash,M-Pesa Agent,Kawangware

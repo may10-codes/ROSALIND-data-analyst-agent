@@ -1,0 +1,21 @@
+transaction_date,customer_id,region,product_category,units_sold,unit_price,channel
+2024-01-05,CUST-1001,Nairobi,Electronics,2,45000,Online
+2024-01-08,CUST-1002,Kisumu,Fashion,5,8500,In-Store
+2024-01-12,CUST-1001,Nairobi,Electronics,1,45000,Online
+2024-02-14,CUST-1003,Mombasa,Home & Living,3,12000,In-Store
+2024-02-20,CUST-1004,Nakuru,Fashion,8,7500,Online
+2024-03-01,CUST-1005,Nairobi,Electronics,1,52000,Online
+2024-03-15,CUST-1006,Eldoret,Fashion,12,9000,In-Store
+2024-04-02,CUST-1007,Nairobi,Electronics,3,48000,Online
+2024-04-18,CUST-1008,Kisumu,Home & Living,6,15000,In-Store
+2024-05-05,CUST-1009,Mombasa,Fashion,4,8000,Online
+2024-06-10,CUST-1010,Nairobi,Electronics,2,50000,Online
+2024-07-22,CUST-1011,Nakuru,Fashion,15,9500,In-Store
+2024-08-30,CUST-1012,Nairobi,Electronics,1,51000,Online
+2024-09-12,CUST-1013,Kisumu,Fashion,7,8800,In-Store
+2024-10-05,CUST-1014,Mombasa,Home & Living,5,13000,Online
+2024-11-18,CUST-1015,Nairobi,Electronics,4,49000,Online
+2024-12-01,CUST-1016,Nakuru,Fashion,3,7800,In-Store
+2024-12-15,CUST-1017,Nairobi,Electronics,1,47000,Online
+2024-12-20,CUST-1018,Kisumu,Fashion,2,8200,In-Store
+2024-12-28,CUST-1019,Mombasa,Home & Living,8,14000,Online
