@@ -1,21 +1,28 @@
 # rosalind/agent.py
 from __future__ import annotations
-from typing import Optional, Dict, Any, List
+
+from typing import Optional, Dict, Any, List, TypedDict, Annotated
+import operator
+
 import pandas as pd
 
-from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage, AnyMessage
 from langchain_core.runnables import Runnable
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode, tools_condition
 
+# These are the correct 2025 imports — no more langchain.chat_models or .llms
+from langchain_community.tools import PythonREPLTool
+
+# Your custom tools and prompts
 from rosalind.prompts import SYSTEM_PROMPT
 from rosalind.memory import ConversationMemory
 from rosalind.tools import (
     load_data, clean_data,
-    plot, create_line_chart, create_bar_chart, create_scatter_chart, create_dashboard,
-    create_dax_snippets
+    plot, create_line_chart, create_bar_chart, create_scatter_chart,
+    create_dashboard, create_dax_snippets
 )
-
 class RosalindAgent:
     """
     Rosalind – Fully Autonomous AI Data Analyst
