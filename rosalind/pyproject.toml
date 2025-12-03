@@ -22,7 +22,7 @@ anthropic = "^0.18.0"
 
 # Data & viz
 pandas = "^2.2.2"
-ploture = "^5.22.0"
+plotly = "^5.22.0"                # ← FIXED: was "ploture" (typo)
 
 # Vector DB — this is the magic line that fixes pysqlite3-binary forever
 chromadb = { version = "^0.5.3", extras = ["sqlite"] }
@@ -32,10 +32,6 @@ hnswlib = "^0.8.0"
 tiktoken = ">=0.8.0"
 pydantic = "2.8.2"
 python-dotenv = "^1.0.1"
-
-# REMOVED ON PURPOSE:
-# pysqlite3-binary = "*"   ← DELETE THIS LINE ENTIRELY
-# Chromadb + extras = ["sqlite"] replaces it completely and works on Python 3.13 too
 
 [tool.poetry.group.dev.dependencies]
 black = "*"
