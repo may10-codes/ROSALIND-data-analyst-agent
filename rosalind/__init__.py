@@ -13,11 +13,12 @@ Main classes:
 # Version of the package
 __version__ = "0.1.0"
 
-# When someone does `from rosalind import RosalindAgent`
-from .agent import RosalindAgent
+# Absolute import (works better on Streamlit Cloud and similar environments)
+from rosalind.agent import RosalindAgent
 
 # Optional: expose other high-level objects later
-# from .memory import ConversationMemory
-# from .tools import ...
+# from rosalind.memory import ConversationMemory
+# from rosalind.tools import ...
 
 __all__ = ["RosalindAgent"]
+
