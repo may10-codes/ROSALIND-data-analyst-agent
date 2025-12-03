@@ -1,21 +1,19 @@
 # rosalind/agent.py
 from __future__ import annotations
 
-from typing import Optional, Dict, Any, List, TypedDict, Annotated
+from typing import Optional, List, TypedDict, Annotated
 import operator
 
 import pandas as pd
 
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage, AnyMessage
-from langchain_core.runnables import Runnable
+from langchain_core.messages import HumanMessage, SystemMessage, AnyMessage
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode, tools_condition
 
-# These are the correct 2025 imports — no more langchain.chat_models or .llms
+# Tools — PythonREPLTool moved to community in 0.3+
 from langchain_community.tools import PythonREPLTool
 
-# Your custom tools and prompts
 from rosalind.prompts import SYSTEM_PROMPT
 from rosalind.memory import ConversationMemory
 from rosalind.tools import (
@@ -23,79 +21,66 @@ from rosalind.tools import (
     plot, create_line_chart, create_bar_chart, create_scatter_chart,
     create_dashboard, create_dax_snippets
 )
+
+
+# ─────────────────────────────── State Definition ───────────────────────────────
+class AgentState(TypedDict):
+    messages: Annotated[List[AnyMessage], operator.add]
+    memory: Optional[ConversationMemory]
+
+
 class RosalindAgent:
-    """
-    Rosalind – Fully Autonomous AI Data Analyst
-    One line → Full analysis, charts, DAX, insights
-    """
-    
     def __init__(
         self,
-        model: str = "grok-beta",
-        temperature: float = 0.1,
-        verbose: bool = True
+        openai_api_key: str,
+        memory: Optional[ConversationMemory] = None,
+        verbose: bool = False
     ):
-        self.memory = ConversationMemory()
+        self.memory = memory or ConversationMemory()
         self.verbose = verbose
-        self._llm = None
-        self._model_name = model
-        self._temperature = temperature
-        self._agent_executor: Optional[Runnable] = None
+        self._agent_executor = None
 
-    @property
-    def llm(self):
-        if self._llm is None:
-            self._build_llm()
-        return self._llm
+        self.llm = ChatOpenAI(
+            model="gpt-4o",
+            temperature=0,
+            openai_api_key=openai_api_key,
+        )
 
-    def _build_llm(self):
-        try:
-            from langchain_groq import ChatGroq
-            self._llm = ChatGroq(model=self._model_name, temperature=self._temperature)
-            if self.verbose: print(f"Connected to Groq ({self._model_name})")
-        except:
-            try:
-                from langchain_openai import ChatOpenAI
-                self._llm = ChatOpenAI(model=self._model_name, temperature=self._temperature)
-                if self.verbose: print(f"Connected to OpenAI ({self._model_name})")
-            except:
-                from langchain_ollama import ChatOllama
-                self._llm = ChatOllama(model=self._model_name, temperature=self._temperature)
-                if self.verbose: print(f"Connected to Ollama ({self._model_name})")
-
-    def _get_tools(self):
-        """All tools the agent can use"""
-        return [
-            load_data,
-            clean_data,
-            plot,
-            create_line_chart,
-            create_bar_chart,
-            create_scatter_chart,
-            create_dashboard,
-            create_dax_snippets
+        # All tools
+        tools = [
+            load_data, clean_data,
+            plot, create_line_chart, create_bar_chart, create_scatter_chart,
+            create_dashboard, create_dax_snippets,
+            PythonREPLTool(),
         ]
 
-    def _create_agent(self) -> Runnable:
-        tools = self._get_tools()
+        # Bind tools to LLM
         llm_with_tools = self.llm.bind_tools(tools)
 
-        system_msg = SystemMessage(content=SYSTEM_PROMPT)
+        # ────────────────────────── LangGraph Workflow ──────────────────────────
+        def agent_node(state: AgentState):
+            messages = state["messages"]
 
-        def agent_node(state):
-            messages = [system_msg] + state["messages"]
-            response = llm_with_tools.invoke(messages)
+            # Inject conversation memory
+            if self.memory and len(self.memory.buffer) > 0:
+                messages = self.memory.buffer + messages
+
+            # System prompt
+            system_msg = SystemMessage(content=SYSTEM_PROMPT)
+            response = llm_with_tools.invoke([system_msg] + messages)
             return {"messages": [response]}
 
-        builder = StateGraph(Dict)
-        builder.add_node("agent", agent_node)
-        builder.add_node("tools", ToolNode(tools))
+        # Build graph
+        workflow = StateGraph(AgentState)
 
-        builder.set_entry_point("agent")
-        builder.add_conditional_edges("agent", tools_condition)
-        builder.add_edge("tools", "agent")
+        workflow.add_node("agent", agent_node)
+        workflow.add_node("tools", ToolNode(tools))
 
-        return builder.compile()
+        workflow.set_entry_point("agent")
+        workflow.add_conditional_edges("agent", tools_condition)
+        workflow.add_edge("tools", "agent")
+
+        self._agent_executor = workflow.compile()
 
     def analyze(
         self,
@@ -104,11 +89,10 @@ class RosalindAgent:
         df: Optional[pd.DataFrame] = None,
         filename: str = "data.csv"
     ) -> str:
-        if not self._agent_executor:
-            self._agent_executor = self._create_agent()
-            if self.verbose: print("Rosalind agent ready")
+        if not question.strip():
+            return "Please ask a question about the data."
 
-        # Load data if provided
+        # Load and clean data if file provided
         if file_path:
             df_raw, info = load_data(file_path)
             df_clean, summary = clean_data(df_raw)
@@ -116,12 +100,9 @@ class RosalindAgent:
             if self.verbose:
                 print(f"{info}\n{summary}")
 
-        if not question.strip():
-            return "Please ask a question about the data."
-
         # Build context
         context = f"""
-Dataset: {self.memory.dataset_summary}
+Dataset: {self.memory.dataset_summary or "No data loaded yet"}
 Past questions: {len(self.memory.memory_entries)}
 Current question: {question}
         """.strip()
@@ -129,14 +110,18 @@ Current question: {question}
         if self.verbose:
             print("\nRosalind is analyzing...\n")
 
+        # Run agent
         result = self._agent_executor.invoke({
-            "messages": [HumanMessage(content=f"{context}\n\nQuestion: {question}")]
+            "messages": [HumanMessage(content=f"{context}\n\nQuestion: {question}")],
+            "memory": self.memory
         })
 
         final_answer = result["messages"][-1].content
-        print(final_answer)
 
-        # Save interaction
+        if self.verbose:
+            print(final_answer)
+
+        # Save to memory
         self.memory.add_interaction(question, final_answer)
 
         return final_answer
