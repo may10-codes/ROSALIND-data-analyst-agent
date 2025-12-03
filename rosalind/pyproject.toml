@@ -3,28 +3,39 @@ name = "rosalind-data-analyst-agent"
 version = "0.1.0"
 description = "Rosalind Data Analyst Agent"
 authors = ["Your Name <you@example.com>"]
-# We deliberately disable package mode because on Streamlit Cloud
-# we only need dependency management, not to install the project itself as a package
 package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.12"                  # Critical: forces Python 3.12 on Streamlit Cloud
+
+# Core web & UI
 streamlit = "^1.38.0"
-langchain = "^0.3.0"
+
+# LangChain ecosystem (Dec 2025 working versions)
+langchain = "^0.3.20"
 langchain-community = "^0.3.0"
 langchain-openai = "^0.2.0"
 
-
+# LLM providers
 openai = "^1.50.0"
 anthropic = "^0.18.0"
-python-dotenv = "^1.0.1"
-chromadb = "0.5.3"
-pysqlite3-binary = "*"
+
+# Data & viz
+pandas = "^2.2.2"
+ploture = "^5.22.0"
+
+# Vector DB — this is the magic line that fixes pysqlite3-binary forever
+chromadb = { version = "^0.5.3", extras = ["sqlite"] }
+
+# These are safe — they have proper Python 3.12+ wheels
 hnswlib = "^0.8.0"
 tiktoken = ">=0.8.0"
 pydantic = "2.8.2"
-pandas = "^2.2.2"
-plotly = "^5.22.0"
+python-dotenv = "^1.0.1"
+
+# REMOVED ON PURPOSE:
+# pysqlite3-binary = "*"   ← DELETE THIS LINE ENTIRELY
+# Chromadb + extras = ["sqlite"] replaces it completely and works on Python 3.13 too
 
 [tool.poetry.group.dev.dependencies]
 black = "*"
